@@ -1,0 +1,28 @@
+services:
+  jenkins:
+    image: ccr.ccs.tencentyun.com/ccops/all:jenkins-2.492.3-lts-jdk17
+    user: root
+    container_name: jenkins
+    restart: always
+    environment:
+      TZ: "Asia/Shanghai"
+      JENKINS_UC: "https://mirrors.tuna.tsinghua.edu.cn/jenkins/"
+      JENKINS_UC_DOWNLOAD: "https://mirrors.tuna.tsinghua.edu.cn/jenkins/"
+      JAVA_OPTS: "-Dhudson.model.DownloadService.noSignatureCheck=true"
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    volumes:
+      - ./data:/var/jenkins_home
+      - /etc/localtime:/etc/localtime
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sSf -u admin:1qaz@WSX http://localhost:8080/api/json | grep -q 'mode' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s

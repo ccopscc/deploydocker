@@ -1,0 +1,20 @@
+http:
+  routers:
+    hexo-tst:
+      rule: Host(`hexo.ccops.cc`)
+      tls:
+        certResolver: "myresolver"
+        domains:
+          - main: "ccops.cc"
+            sans:
+              - "*.ccops.cc"
+      service: hexo-tst
+      middlewares:
+        - global-compress
+        - global-headers
+
+  services:
+    hexo-tst:
+      loadBalancer:
+        servers:
+          - url: "http://qexo:8000"  # 替换为实际的后端服务地址

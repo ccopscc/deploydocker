@@ -1,0 +1,11 @@
+services:
+  grafana:
+    image: ccr.ccs.tencentyun.com/ccops/all:grafana-enterprise
+    container_name: grafana
+    restart: always
+    environment:
+     - GF_SERVER_ROOT_URL=http://my.grafana.server/
+    ports:
+     - '3000:3000'
+    volumes:
+     - './data:/var/lib/grafana'

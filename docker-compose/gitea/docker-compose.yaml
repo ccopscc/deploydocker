@@ -1,0 +1,21 @@
+services:
+  server:
+    image: gitea/gitea:1.23.7
+    restart: always
+    container_name: gitea
+    ports:
+      - "23233:23233"
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    networks:
+      - app_network
+    volumes:
+      - ./data:/data/gitea/
+      - ./git_home:/data/git/.ssh
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+networks:
+  app_network:
+    external: true
+    name: app_network

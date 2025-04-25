@@ -1,0 +1,20 @@
+services:
+  qexo:
+    restart: always
+    image: abudulin/qexo:3.6.0
+    container_name: qexo
+    networks:
+      - app_network
+    ports:
+      - "8000:8000"
+    environment:
+      WORKERS: 4
+      THREADS: 4
+      TIMEOUT: 600
+    volumes:
+      - ./data:/app/db
+      - ./hexo:/app/hexo
+networks:
+  app_network:
+    external: true
+    name: app_network

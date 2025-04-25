@@ -1,0 +1,12 @@
+services:
+  robot-lark:
+    image: registry.aliyuncs.com/elvin/python:lark-robot
+    container_name: robot-lark
+    restart: always
+    hostname: robot-lark
+    network_mode: host
+    volumes:
+      - ./:/opt
+    env_file:
+      - .env_lark
+    command: python3 /opt/lark-robot.py

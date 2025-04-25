@@ -1,0 +1,19 @@
+# http:
+#   routers:
+#     flarum:
+#       rule: Host(`www.ccops.cc`)
+#       tls:
+#         certResolver: "myresolver"
+#         domains:
+#           - main: "ccops.cc"
+#             sans:
+#               - "*.ccops.cc"
+#       service: flarum
+#       middlewares:
+#         - global-headers
+#         - global-compress
+#   services:
+#     flarum:
+#       loadBalancer:
+#         servers:
+#           - url: "http://flarum:8888"  # 替换为实际的后端服务地址

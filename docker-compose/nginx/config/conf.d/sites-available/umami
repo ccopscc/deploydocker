@@ -1,0 +1,41 @@
+server {
+  listen 80;
+  listen [::]:80;
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+  server_name umami.ccops.cc;
+  # 强制 HTTPS（如果是纯 HTTPS 站点）
+  if ($scheme = http) {
+      return 301 https://$server_name$request_uri;
+  }
+  # 安全头部（精简版）
+  add_header X-Frame-Options "SAMEORIGIN";
+  add_header X-Content-Type-Options "nosniff";
+  add_header Referrer-Policy "strict-origin";
+  
+  # 跨域
+  map $http_origin $cors_origin {
+      default "";
+      "~^https://([a-z0-9-]+\.)?ccops\.cc$" $http_origin;  # 匹配主域和所有子域
+      "~^https://(.*\.)?ccops\.com$" $http_origin;  # 其他域名示例
+  }
+  add_header Access-Control-Allow-Origin $cors_origin;
+  # add_header Access-Control-Allow-Origin 'https://ccops.cc'; #单个域名写法
+  add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS';
+  add_header Access-Control-Allow-Headers 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,  X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization';
+  if ($request_method = 'OPTIONS') {
+      return 204;
+  }
+  add_header Content-Security-Policy 'frame-ancestors *.ccops.cc';
+  # 主请求处理
+  location / {
+    # 跨域
+    proxy_hide_header 'Access-Control-Allow-Origin';
+    proxy_hide_header 'Content-Security-Policy';
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Real_IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr:$remote_port;
+    proxy_pass http://umami:3000;
+  }
+}

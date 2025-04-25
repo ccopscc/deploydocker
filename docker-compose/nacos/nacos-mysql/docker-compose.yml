@@ -1,0 +1,43 @@
+services:
+  nacos-mysql:
+    container_name: nacos-mysql
+    image: example/ccr.ccs.tencentyun.com/ccops/all:mysql-8
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: nacos
+      MYSQL_USER: nacos
+      MYSQL_PASSWORD: qweasd
+      LANG: C.UTF-8
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./mysql-builed/mysql-schema.sql:/docker-entrypoint-initdb.d/nacos-mysql.sql
+    ports:
+      - "3308:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+  mysqld_exporter:
+    image: ccr.ccs.tencentyun.com/ccops/all:mysqld-exporter-v0.17.2
+    container_name: mysqld_exporter
+    hostname: mysqld_exporter
+    restart: unless-stopped
+    volumes:
+      - /usr/share/zoneinfo/PRC:/etc/localtime
+    environment:
+      MYSQLD_EXPORTER_PASSWORD: qweasd
+    entrypoint:
+      - /bin/mysqld_exporter
+      - --mysqld.address=nacos-mysql:3306
+      - --collect.info_schema.innodb_metrics
+      - --collect.info_schema.tables
+      - --collect.info_schema.processlist
+      - --collect.info_schema.tables.databases=*
+      - --mysqld.username=nacos
+    ports:
+      - "9105:9104"
+    depends_on:
+      - nacos-mysql

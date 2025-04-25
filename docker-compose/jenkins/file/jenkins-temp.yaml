@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: #APP_NAME
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: #APP_NAME
+      service: #APP_NAME
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: #APP_NAME
+        service: #APP_NAME
+    spec:
+      volumes:
+        - name: skywalking-agent
+          emptyDir: { }
+      containers:
+      - image: 192.168.10.143:5001/test:v4
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-javaagent:/skywalking/agent/skywalking-agent.jar"
+        - name: SW_AGENT_CLUSTER
+          value: "caiwc-test"
+        - name: SW_AGENT_NAMESPACE
+          value: "test-project"
+        - name: SW_AGENT_NAME
+          value: "test::#APP_NAME"
+        - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+          value: "192.168.10.143:11800"
+        name: #APP_NAME
+        ports:
+        - containerPort: 9100
+          name: server
+        volumeMounts:
+          - name: skywalking-agent
+            mountPath: /skywalking
+      initContainers:
+      - name: agent-container
+        image: ccr.ccs.tencentyun.com/ccops/all:skywalking-java-agent-9.4.0
+        volumeMounts:
+          - name: skywalking-agent
+            mountPath: /agent
+        command: [ "/bin/sh" ]
+        args: [ "-c", "cp -R /skywalking/agent /agent/" ]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: #APP_NAME
+  labels:
+    app: #APP_NAME
+spec:
+  type: ClusterIP
+  ports:
+  - name: server
+    port: 8080  
+    targetPort: 8080
+  - name: management
+    port: 8081
+    targetPort: 8081
+  selector:
+    app: #APP_NAME

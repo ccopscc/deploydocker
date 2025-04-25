@@ -1,0 +1,20 @@
+http:
+  routers:
+    hexo:
+      rule: Host(`test.ccops.cc`)
+      tls:
+        certResolver: "myresolver"
+        domains:
+          - main: "ccops.cc"
+            sans:
+              - "*.ccops.cc"
+      service: hexo
+      middlewares:
+        - global-compress
+        - global-headers
+
+  services:
+    hexo:
+      loadBalancer:
+        servers:
+          - url: "http://172.18.0.1:4000"  # 替换为实际的后端服务地址

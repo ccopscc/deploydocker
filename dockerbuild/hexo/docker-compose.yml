@@ -1,0 +1,23 @@
+version: "3"
+networks:
+  hexo_network:
+    name: hexo_network
+    external: false
+  traefik_network:
+    external: true
+services:
+  server:
+    image: ccr.ccs.tencentyun.com/ccops/hexo7.3:butterfly-5.3.5
+    command: hexo server -g -s
+    restart: always
+    container_name: hexo
+    networks:
+      - hexo_network
+      - traefik_network
+    volumes:
+      - ./blog/doc:/opt/blog/source/_posts
+      - ./blog/_config.butterfly.yml:/opt/blog/_config.butterfly.yml
+      - ./blog/_config.yml:/opt/blog/_config.yml
+      - ./public:/opt/blog/public
+      - ./db.json:/opt/blog/db.json
+      - /etc/localtime:/etc/localtime:ro

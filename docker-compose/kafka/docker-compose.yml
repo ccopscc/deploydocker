@@ -1,0 +1,40 @@
+services:
+  kafka:
+    image: ccr.ccs.tencentyun.com/ccops/all:kafka-3.9.0
+    container_name: kafka
+    restart: always
+    hostname: 'kafka'
+    network_mode: host
+    environment:
+    - KAFKA_NODE_ID=1
+    - KAFKA_CLUSTER_ID=$(sh /opt/kafka/bin/kafka-storage.sh random-uuid)
+    - KAFKA_PROCESS_ROLES=controller,broker
+    - KAFKA_CONTROLLER_QUORUM_VOTERS=1@192.168.10.143:9093
+    - KAFKA_LISTENERS=PLAINTEXT://192.168.10.143:9092,CONTROLLER://192.168.10.143:9093
+    - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.10.143:9092
+    - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+    - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+    - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    - KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS=50
+    - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    volumes:
+     - '/data/server/kafka/data:/tmp/kafka-logs'
+  kafka-ui:
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/provectuslabs/kafka-ui:v0.7.2
+    container_name: kafka-ui
+    ports:
+      - "38080:8080"
+    restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=caiwc-kafka
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=192.168.10.143:9092
+      - KAFKA_CLUSTERS_0_READONLY=true
+  kafka-exporter:
+    image: 192.168.10.143:5001/kafka-exporter:1.7.0
+    command:
+      - '--kafka.server=192.168.10.143:9092'
+      - '--kafka.version=3.9.0'
+    restart: always
+    ports:
+      - 9308:9308

@@ -1,0 +1,39 @@
+http:
+  routers:
+    dashboard:
+      rule: "Host(`traefik.ccops.cc`)"
+      tls:
+        certResolver: myresolver
+      service: api@internal
+      middlewares:
+        - global-headers
+        - global-compress
+        - auth
+    monitor:
+      rule: "Host(`monitor.ccops.cc`)"
+      tls:
+        certResolver: myresolver
+      service: monitor
+      middlewares:
+        - global-headers
+      entryPoints:
+        - websecure
+    prometheus:
+      rule: "Host(`vm.ccops.cc`)"
+      tls:
+        certResolver: myresolver
+      service: prometheus
+      middlewares:
+        - global-headers
+      entryPoints:
+        - websecure
+
+  services:
+    monitor:
+      loadBalancer:
+        servers:
+          - url: "http://172.18.0.1:3000" 
+    prometheus:
+      loadBalancer:
+        servers:
+          - url: "http://172.18.0.1:8428" 

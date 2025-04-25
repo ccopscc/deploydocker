@@ -1,0 +1,87 @@
+services:
+  # vmagent 是 VictoriaMetrics 的指标采集器
+  # 它会根据 --promscrape.config 配置抓取目标指标
+  # 并通过 --remoteWrite.url 将指标写入 VictoriaMetrics
+  vmagent:
+    image: victoriametrics/vmagent:v1.115.0  # 使用官方 vmagent 镜像
+    depends_on:
+      - "victoriametrics"  # 依赖 victoriametrics 服务
+    ports:
+      - 8429:8429  # 暴露 vmagent 的 HTTP 端口
+    volumes:
+      - ./vmagent/data:/vmagentdata  # 持久化 vmagent 数据
+      - ./vmagent/prometheus-vm-single.yml:/etc/prometheus/prometheus.yml  # 挂载 Prometheus 格式的抓取配置
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"  # 指定抓取配置文件路径
+      - "--remoteWrite.url=http://victoriametrics:8428/api/v1/write"  # 指标写入地址
+    restart: always  # 总是自动重启
+
+  # VictoriaMetrics 是核心指标存储服务
+  # 单节点模式，负责存储指标数据并提供查询接口
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.115.0  # 官方镜像
+    ports:
+      - 8428:8428  # HTTP API 端口（主要接口）
+      - 8089:8089  # InfluxDB 协议端口
+      - 8089:8089/udp  # InfluxDB UDP 协议端口
+      - 2003:2003  # Graphite 协议端口
+      - 2003:2003/udp  # Graphite UDP 协议端口
+      - 4242:4242  # OpenTSDB 协议端口
+    volumes:
+      - ./vmdata:/storage  # 持久化指标数据
+    command:
+      - "--storageDataPath=/storage"  # 数据存储路径
+      - "--graphiteListenAddr=:2003"  # 启用 Graphite 协议支持
+      - "--opentsdbListenAddr=:4242"  # 启用 OpenTSDB 协议支持
+      - "--httpListenAddr=:8428"  # HTTP 服务监听地址
+      - "--influxListenAddr=:8089"  # InfluxDB 协议监听地址
+      - "--vmalert.proxyURL=http://vmalert:8880"  # vmalert 代理地址
+    restart: always
+
+  # Grafana 可视化面板服务
+  # 配置了 VictoriaMetrics 作为默认数据源
+  grafana:
+    image: grafana/grafana:11.5.0  # Grafana 官方镜像
+    depends_on:
+      - "victoriametrics"  # 依赖指标存储服务
+    ports:
+      - 3000:3000  # Web 访问端口
+    volumes:
+      - ./grafana/data:/var/lib/grafana  # 持久化 Grafana 数据
+      # 预配置数据源
+      - ./grafana/prometheus-datasource-single.yml:/etc/grafana/provisioning/datasources/single.yml
+      # 预配置仪表盘
+      - ./grafana/provisioning/:/etc/grafana/provisioning/dashboards/
+    restart: always
+  cadvisor:
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/gcr.io/cadvisor/cadvisor:v0.52.1
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - 8080:8080
+    restart: always
+  node-exporter:
+    image: ccr.ccs.tencentyun.com/ccops/all:node-exporter-v1.8.2
+    privileged: true
+    network_mode: host
+    restart: always
+    command:
+      - '--web.listen-address=$(HOSTIP):9100'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/host/root'
+      - '--no-collector.hwmon'
+      - '--no-collector.nfs'
+      - '--no-collector.nfsd'
+      - '--no-collector.nvme'
+      - '--no-collector.dmi'
+      - '--no-collector.arp'
+      - '--collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/containerd/.+|/var/lib/docker/.+|var/lib/kubelet/pods/.+)($|/)'
+      - '--collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro

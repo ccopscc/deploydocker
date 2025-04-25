@@ -1,0 +1,84 @@
+ping: ""
+api:
+  dashboard: true
+  insecure: true
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+log:
+  level: WARN
+  format: json
+  filePath: /plugins-storage/log/log.log
+
+accessLog:
+  bufferingSize: 100
+  format: json
+  filePath: /plugins-storage/log/access.log
+  fields:
+    headers:
+      names:
+        X-Forwarded-For: keep
+        X-Ruxit-Forwarded-For: keep
+        User-Agent: keep
+        Connect: keep
+        X-Real-Ip: keep
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
+
+metrics:
+  prometheus:
+    addRoutersLabels: true
+    addServicesLabels: true
+    addEntryPointsLabels: true
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
+
+providers:
+  file:
+    directory: "/etc/traefik/services-rule"
+    watch: true
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    watch: true
+    exposedByDefault: false
+
+tracing:
+  serviceName: traefik
+
+certificatesResolvers:
+  myresolver:
+    acme:
+      certificatesDuration: 8760
+      httpChallenge:
+        entryPoint: web
+      email: cai-ai@outlook.com
+      storage: /plugins-storage/acme.json
+      dnsChallenge:
+        provider: tencentcloud
+        delayBeforeCheck: 0
+
+experimental:
+  plugins:
+    fail2ban:
+      moduleName: github.com/tomMoulard/fail2ban
+      version: v0.8.3
+    souin:
+      moduleName: github.com/darkweak/souin
+      version: v1.7.2
+    sablier:
+      moduleName: "github.com/acouvreur/sablier"
+      version: "v1.8.0"

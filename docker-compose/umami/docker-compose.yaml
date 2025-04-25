@@ -1,0 +1,35 @@
+services:
+  umami:
+    image: ghcr.chenby.cn/umami-software/umami:postgresql-latest
+    container_name: umami
+    environment:
+      TRACKER_SCRIPT_NAME: ccops_tracker.js
+      DATABASE_URL: postgresql://umami:pVD_vTy-v7T8zCr@db:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: replace-me-with-a-random-string
+      ENABLE_TEST_CONSOLE: 1
+      COLLECT_API_ENDPOINT: /ccops_collect
+    restart: always
+    networks:
+      - app_network
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+  db:
+    image: postgres:15-alpine
+    container_name: umami-db
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: pVD_vTy-v7T8zCr
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ./umami-db-data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - app_network
+networks:
+  app_network:
+    external: true
+    name: app_network

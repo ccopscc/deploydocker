@@ -1,0 +1,43 @@
+version: "3.8"
+networks:
+  traefik_network:
+    name: traefik_network
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    networks:
+      - traefik_network
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./prometheus/config:/etc/prometheus/
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.prometheus.rule: Host(`prometheus.ccops.cc`)
+      traefik.http.routers.prometheus.tls: "true"
+      traefik.http.routers.prometheus.tls.certresolver: myresolver
+      traefik.http.services.prometheus.loadbalancer.server.port: 9090
+      traefik.http.routers.prometheus.middlewares: auth
+      # 账号密码 ccops_admin/P@66WMvd 生成 echo $(htpasswd -nb user password) | sed -e s/\\$/\\$\\$/g
+      traefik.http.middlewares.auth.basicauth.users: "ccops_admin:$$apr1$$hO6odzfZ$7LQ5/jlp9JxggX7v0OMmb."
+  jaeger:
+    image: jaegertracing/all-in-one:1.47
+    container_name: jaeger
+    networks:
+      - traefik_network
+    volumes:
+      - /etc/localtime:/etc/localtime
+    environment:
+      - "COLLECTOR_ZIPKIN_HOST_PORT=:9411"
+      - "COLLECTOR_OTLP_ENABLED=true"
+      - "METRICS_STORAGE_TYPE=prometheus"
+      - "PROMETHEUS_SERVER_URL=http://prometheus:9090"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.jaeger.rule: Host(`jaeger.ccops.cc`)
+      traefik.http.routers.jaeger.tls: "true"
+      traefik.http.routers.jaeger.tls.certresolver: myresolver
+      traefik.http.services.jaeger.loadbalancer.server.port: 16686
+      traefik.http.routers.jaeger.middlewares: auth
+      # 账号密码 ccops_admin/P@66WMvd 生成 echo $(htpasswd -nb user password) | sed -e s/\\$/\\$\\$/g
+      traefik.http.middlewares.auth.basicauth.users: "ccops_admin:$$apr1$$hO6odzfZ$7LQ5/jlp9JxggX7v0OMmb."

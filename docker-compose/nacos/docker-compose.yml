@@ -1,0 +1,27 @@
+services:
+  nacos-server:
+    image: ccr.ccs.tencentyun.com/ccops/all:nacos-server-v2.5.1
+    container_name: nacos-server
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    env_file:
+      - ./nacos.env
+    volumes:
+      - /data/server/nacos/logs:/home/nacos/logs
+      - /etc/localtime:/etc/localtime:ro
+    network_mode: host
+    expose:
+      - "8848"
+      - "8849"
+      - "9848"
+      - "9849"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sSf http://localhost:8848/nacos/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s

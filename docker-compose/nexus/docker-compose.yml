@@ -1,0 +1,22 @@
+services:
+  nexus:
+    restart: always
+    image: ccr.ccs.tencentyun.com/ccops/all:nexus3-3.78.1
+    container_name: nexus3
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    ports:
+      - 8081:8081
+      - 5000:5000
+      - 5001:5001
+    volumes:
+      - ./data:/nexus-data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sSf http://localhost:8081/service/rest/v1/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s

@@ -1,0 +1,52 @@
+services:
+  elasticsearch:
+    image: ccr.ccs.tencentyun.com/ccops/all:elasticsearch-7.10.2
+    container_name: elasticsearch
+    privileged: true
+    restart: always
+    network_mode: host
+    environment:
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "TZ=Asia/Shanghai"
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    volumes:
+      - /data/server/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /data/server/elasticsearch/plugins:/usr/share/elasticsearch/plugins
+      - /data/server/elasticsearch/data:/usr/share/elasticsearch/data
+    expose:
+      - 9200
+      - 9300
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sS http://esadmin:qweasd@localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  elasticsearch-exporter:
+    restart: always
+    image: ccr.ccs.tencentyun.com/ccops/all:elasticsearch-exporter-v1.9.0
+    container_name: elasticsearch-exporter
+    ports:
+        - 9114:9114
+    privileged: true
+    command:
+     - '--es.uri=http://esadmin:qweasd@192.168.10.143:9200'
+     - '--collector.clustersettings'
+     - '--es.all'
+     - '--es.indices'
+     - '--es.indices_settings'
+     - '--es.shards'
+     - '--es.timeout=5s'
+     - '--es.ssl-skip-verify'
+     - '--es.clusterinfo.interval=5m'
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sS http://localhost:9114 | grep -q 'Elasticsearch Exporter' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s

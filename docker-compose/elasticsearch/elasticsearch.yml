@@ -1,0 +1,12 @@
+cluster.name: elasticsearch
+cluster.max_shards_per_node: 10000
+node.name: 192.168.10.143
+network.host: 192.168.10.143
+http.port: 9200
+action.destructive_requires_name: true
+indices.breaker.total.use_real_memory: false
+indices.breaker.total.limit: 70%
+http.cors.allow-origin: /.*/
+http.cors.enabled: true
+http.cors.allow-headers: Authorization
+xpack.security.enabled: true

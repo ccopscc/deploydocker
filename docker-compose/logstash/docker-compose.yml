@@ -1,0 +1,18 @@
+services:   
+  logstash:
+    network_mode: host
+    image: ccr.ccs.tencentyun.com/ccops/all:logstash-7.17.28
+    container_name: logstash
+    restart: always
+    volumes:
+      - /data/server/logstash/plugin:/usr/share/logstash/plugin
+      - /data/server/logstash/pipeline:/usr/share/logstash/pipeline
+      - /data/server/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - /data/server/logstash/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - /data/server/logstash/logstash-jvm.options:/usr/share/logstash/config/jvm.options
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sSf http://localhost:9600/_node/stats/pipeline | grep -q     '\"events\":' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s

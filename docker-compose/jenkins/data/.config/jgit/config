@@ -1,0 +1,6 @@
+[filesystem "Eclipse Adoptium|17.0.4.1|/dev/mapper/almalinux-root"]
+	timestampResolution = 4446 nanoseconds
+	minRacyThreshold = 1141 microseconds
+[filesystem "Eclipse Adoptium|17.0.14|/dev/mapper/almalinux-root"]
+	timestampResolution = 6614 nanoseconds
+	minRacyThreshold = 1398 microseconds

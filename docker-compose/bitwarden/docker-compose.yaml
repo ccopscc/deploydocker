@@ -1,0 +1,36 @@
+# docker-compose.yml
+version: '3'
+networks:
+  bitwarden_network:
+    name: bitwarden_network
+    external: false
+  traefik_network:
+    external: true
+services:
+  waline:
+    container_name: bitwarden
+    image: vaultwarden/server:1.28.1-alpine
+    restart: always
+    networks:
+      - bitwarden_network
+      - traefik_network
+    volumes:
+      - ${PWD}/bitwarden_data:/data
+    environment:
+      WEBSOCKET_ENABLED: 'true' 
+      SIGNUPS_ALLOWED: 'true' 
+      DOMAIN: 'https://bitwarden.ccops.cc'
+      SMTP_HOST: 'smtp.qiye.aliyun.com'
+      SMTP_FROM: 'c_c@mail.ccops.cc'
+      SMTP_FROM_NAME: 'c_c'
+      SMTP_PORT: '25'
+      SMTP_SECURITY: 'starttls'
+      SMTP_USERNAME: 'c_c@mail.ccops.cc'
+      SMTP_PASSWORD: 'dU56qc5HCgiQp7WD'
+      SMTP_AUTH_MECHANISM: 'Plain'
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.bitwarden.rule: Host(`bitwarden.ccops.cc`)
+      traefik.http.routers.bitwarden.tls: "true"
+      traefik.http.routers.bitwarden.tls.certresolver: myresolver
+      traefik.http.services.bitwarden.loadbalancer.server.port: 80

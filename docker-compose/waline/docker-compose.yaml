@@ -1,0 +1,27 @@
+services:
+  waline:
+    container_name: waline
+    image: lizheming/waline:latest
+    restart: always
+    volumes:
+      - ./data:/app/data
+    networks:
+      - app_network
+    environment:
+      TZ: 'Asia/Shanghai'
+      SQLITE_PATH: '/app/data'
+      JWT_TOKEN: '0$8VIoKOps2I0KfY'
+      SITE_NAME: '云原生基站评论区'
+      SITE_URL: 'https://waline.ccops.cc'
+      SECURE_DOMAINS: 'ccops.cc'
+      AUTHOR_EMAIL: 'cai-ai@outlook.com'
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.waline.rule: Host(`waline.ccops.cc`)
+      traefik.http.routers.waline.tls: "true"
+      traefik.http.routers.waline.tls.certresolver: myresolver
+      traefik.http.services.waline.loadbalancer.server.port: 8360
+networks:
+  app_network:
+    external: true
+    name: app_network

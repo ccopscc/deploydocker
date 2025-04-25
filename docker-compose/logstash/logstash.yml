@@ -1,0 +1,8 @@
+http.host: "0.0.0.0"
+http.port: 9600
+config.reload.automatic: true
+config.reload.interval: 300s
+pipeline.batch.size: 1000
+pipeline.batch.delay: 100
+pipeline.workers: 6
+pipeline.ecs_compatibility: "disabled"

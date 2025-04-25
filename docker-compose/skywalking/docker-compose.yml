@@ -1,0 +1,24 @@
+services:
+  oap:
+    image: ccr.ccs.tencentyun.com/ccops/all:skywalking-oap-server-9.7.0
+    container_name: oap
+    restart: always
+    environment:
+      - SW_STORAGE=elasticsearch
+      - SW_STORAGE_ES_CLUSTER_NODES=192.168.10.143:9200
+      - SW_ES_USER=esadmin
+      - SW_ES_PASSWORD=qweasd
+    ports:
+     - '11800:11800'
+
+  skywalking-ui:
+    image: ccr.ccs.tencentyun.com/ccops/all:skywalking-ui-9.7.0
+    container_name: skywalking-ui
+    restart: always
+    environment:
+      - SW_OAP_ADDRESS=http://oap:12800
+      - SW_ZIPKIN_ADDRESS=http://oap:9412
+    depends_on:
+      - oap
+    ports:
+     - '8088:8080'

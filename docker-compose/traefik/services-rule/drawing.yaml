@@ -1,0 +1,46 @@
+http:
+  routers:
+    minio:
+      rule: "Host(`minio.ccops.cc`)"
+      service: minio
+      tls:
+        certResolver: myresolver
+      middlewares:
+        - global-compress
+        - global-headers
+
+    s3:
+      rule: "Host(`pictures.ccops.cc`)"
+      service: s3
+      tls:
+        certResolver: myresolver
+      middlewares:
+        - global-compress
+        - global-headers
+
+    piclist:
+      rule: "Host(`piclist.ccops.cc`)"
+      service: piclist
+      tls:
+        certResolver: myresolver
+      middlewares:
+        - global-compress
+        - global-headers
+      entryPoints:
+        - websecure
+
+  services:
+    minio:
+      loadBalancer:
+        servers:
+          - url: "http://minio:443"  # 替换为实际的 MinIO 后端服务地址
+
+    s3:
+      loadBalancer:
+        servers:
+          - url: "http://minio:9000"  # 替换为实际的 S3 后端服务地址
+
+    piclist:
+      loadBalancer:
+        servers:
+          - url: "http://piclist:36677"  # 替换为实际的 piclist 后端服务地址
