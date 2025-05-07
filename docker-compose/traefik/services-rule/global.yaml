@@ -3,4 +3,4 @@ http:
     auth:
       basicAuth:
         users:
-          - "ccops_admin:$apr1$vb3CgQNn$/.tQ03qfdN.TipPisSNYP."
+          - "admin:qweasd123qwedasdYP."

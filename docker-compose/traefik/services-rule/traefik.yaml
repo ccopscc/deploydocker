@@ -1,0 +1,13 @@
+http:
+  routers:
+    dashboard:
+      rule: "Host(`test.ccops.cc`)"
+      tls:
+        certResolver: myresolver
+        domains:
+          - main: "*.ccops.cc"
+            sans:
+              - "*.ccops.cc"
+      service: api@internal
+      middlewares:
+        - auth
