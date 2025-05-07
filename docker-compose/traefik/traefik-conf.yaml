@@ -10,12 +10,12 @@ global:
 log:
   level: WARN
   format: json
-  filePath: /plugins-storage/log/log.log
+  filePath: /logs/log.log
 
 accessLog:
   bufferingSize: 100
   format: json
-  filePath: /plugins-storage/log/access.log
+  filePath: /logs/access.log
   fields:
     headers:
       names:
@@ -42,10 +42,10 @@ metrics:
     addServicesLabels: true
     addEntryPointsLabels: true
     buckets:
-      - 0.1
-      - 0.3
-      - 1.2
-      - 5.0
+    - 0.1
+    - 0.3
+    - 1.2
+    - 5.0
 
 providers:
   file:
@@ -66,7 +66,7 @@ certificatesResolvers:
       httpChallenge:
         entryPoint: web
       email: cai-ai@outlook.com
-      storage: /plugins-storage/acme.json
+      storage: /data/acme.json
       dnsChallenge:
         provider: tencentcloud
         delayBeforeCheck: 0

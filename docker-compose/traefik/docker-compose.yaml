@@ -15,15 +15,15 @@ services:
       retries: 3
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data:/plugins-storage
+      - ./logs:/logs
+      - ./acme.json:/data/acme.json
+      - ./traefik-conf.yaml:/etc/traefik/traefik-conf.yaml
       - ./services-rule:/etc/traefik/services-rule
       - /etc/localtime:/etc/localtime
-    environment:
-      - "TENCENTCLOUD_SECRET_ID= "
-      - "TENCENTCLOUD_SECRET_KEY= "
     command:
-      - --configFile=/plugins-storage/traefik-conf.yaml
+      - --configFile=/etc/traefik/traefik-conf.yaml
 networks:
   app_network:
-    external: true
     name: app_network
+    attachable: true
+    driver: bridge
